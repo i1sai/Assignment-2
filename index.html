@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VirusTotal URL Scanner</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="card">
+      <h1>VirusTotal URL Scanner</h1>
+
+      <label for="url">URL to Scan</label>
+      <input id="url" type="text" placeholder="https://example.com" />
+
+      <button id="lookup">Scan URL</button>
+
+      <div class="status" id="status">Awaiting scan...</div>
+      <div class="summary" id="summary"></div>
+
+      <footer class="footer">Made by Faisal Tumayhi</footer>
+    </div>
+
+    <script src="app.js" defer></script>
+  </body>
+</html>
