@@ -3,52 +3,35 @@ const statusEl = document.getElementById("status");
 const summaryEl = document.getElementById("summary");
 const lookupButton = document.getElementById("lookup");
 
-const API_KEY = "b5646bfb70bebbf3f770501842ab57bfc58362427091223bacdeb0440ae66b7d";
+const API_KEY = "YOUR_API_KEY_HERE";
+
+function encodeURL(url) {
+  return btoa(url).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
 
 async function scanUrl() {
-  const targetUrl = urlInput.value.trim();
+  const rawUrl = urlInput.value.trim();
 
-  if (!targetUrl) {
+  if (!rawUrl) {
     statusEl.textContent = "Please enter a URL.";
     return;
   }
 
   summaryEl.textContent = "";
   lookupButton.disabled = true;
-  statusEl.textContent = "Submitting URL to VirusTotal…";
+  statusEl.textContent = "Scanning…";
 
   try {
-    const submitRes = await fetch("https://www.virustotal.com/api/v3/urls", {
-      method: "POST",
-      headers: {
-        "x-apikey": API_KEY,
-        "Content-Type": "application/x-www-form-urlencoded"
-      },
-      body: `url=${encodeURIComponent(targetUrl)}`
-    });
+    const encoded = encodeURL(rawUrl);
 
-    const submitData = await submitRes.json();
-    const analysisId = submitData.data.id;
+    const report = await fetch(
+      `https://www.virustotal.com/api/v3/urls/${encoded}`,
+      { headers: { "x-apikey": API_KEY } }
+    );
 
-    statusEl.textContent = "Waiting for VirusTotal to finish…";
+    const data = await report.json();
 
-    let analysisData;
-    while (true) {
-      const pollRes = await fetch(
-        `https://www.virustotal.com/api/v3/analyses/${analysisId}`,
-        {
-          headers: { "x-apikey": API_KEY }
-        }
-      );
-      analysisData = await pollRes.json();
-
-      const state = analysisData.data.attributes.status;
-      if (state === "completed") break;
-
-      await new Promise(res => setTimeout(res, 1000));
-    }
-
-    const stats = analysisData.data.attributes.stats;
+    const stats = data.data.attributes.last_analysis_stats;
 
     statusEl.textContent = "Scan complete.";
     summaryEl.textContent =
@@ -57,10 +40,10 @@ async function scanUrl() {
       `Harmless: ${stats.harmless}`;
 
   } catch (err) {
-    statusEl.textContent = `Error: ${err.message}`;
-  } finally {
-    lookupButton.disabled = false;
+    statusEl.textContent = "Error: " + err.message;
   }
+
+  lookupButton.disabled = false;
 }
 
 lookupButton.addEventListener("click", scanUrl);
